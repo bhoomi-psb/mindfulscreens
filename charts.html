@@ -3,42 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Usage Charts</title>
+    <title>Usage Insights - Mindful Screens</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Usage Charts</h1>
+        <h1>Mindful Screens - Usage Insights</h1>
         <a href="/" class="btn btn-primary">Back to Home</a>
 
+        <!-- Filters (optional) -->
+        <form action="/charts" method="GET">
+            <label for="filter_os">Filter by OS:</label>
+            <select name="filter_os" id="filter_os">
+                <option value="">--All--</option>
+                <option value="iOS">iOS</option>
+                <option value="Android">Android</option>
+            </select>
+            <label for="filter_behavior_class">Filter by Behavior Class:</label>
+            <select name="filter_behavior_class" id="filter_behavior_class">
+                <option value="">--All--</option>
+                <option value="1">Class 1</option>
+                <option value="2">Class 2</option>
+                <option value="3">Class 3</option>
+                <option value="4">Class 4</option>
+                <option value="5">Class 5</option>
+            </select>
+            <button type="submit">Apply Filter</button>
+        </form>
+
+        <!-- Charts for visualization -->
+        <div>
+            <canvas id="ageDistributionChart" width="400" height="200"></canvas>
+        </div>
+        <div>
+            <canvas id="genderDistributionChart" width="400" height="200"></canvas>
+        </div>
+        <div>
+            <canvas id="osDistributionChart" width="400" height="200"></canvas>
+        </div>
         <div>
             <canvas id="appUsageChart" width="400" height="200"></canvas>
         </div>
         <div>
-            <canvas id="genderChart" width="400" height="200"></canvas>
+            <canvas id="batteryAppUsageChart" width="400" height="200"></canvas>
         </div>
     </div>
 
     <script>
-        // Data from Flask passed via Jinja
-        const userData = {{ users|tojson }};
+        // Prepare data directly within JavaScript without using JSON
+        const userData = [
+            {% for user in users %}
+                {
+                    device_model: "{{ user.device_model }}",
+                    operating_system: "{{ user.operating_system }}",
+                    app_usage_time: {{ user.app_usage_time }},
+                    screen_on_time: {{ user.screen_on_time }},
+                    battery_drain: {{ user.battery_drain }},
+                    num_apps_installed: {{ user.num_apps_installed }},
+                    data_usage: {{ user.data_usage }},
+                    age: {{ user.age }},
+                    gender: "{{ user.gender }}",
+                    behavior_class: {{ user.behavior_class }}
+                },
+            {% endfor %}
+        ];
 
-        // Group data by OS and calculate average app usage
-        const osData = {};
-        userData.forEach(user => {
-            if (!osData[user.operating_system]) {
-                osData[user.operating_system] = { total: 0, count: 0 };
+        // Filter data if necessary
+        const filterOS = "{{ filter_os }}";
+        const filterBehaviorClass = "{{ filter_behavior_class }}";
+
+        const filteredData = userData.filter(user => {
+            let isValid = true;
+            if (filterOS && user.operating_system !== filterOS) {
+                isValid = false;
             }
-            osData[user.operating_system].total += user.app_usage_time;
-            osData[user.operating_system].count += 1;
+            if (filterBehaviorClass && user.behavior_class != filterBehaviorClass) {
+                isValid = false;
+            }
+            return isValid;
         });
 
-        const osLabels = Object.keys(osData);
-        const osAppUsage = osLabels.map(os => osData[os].total / osData[os].count);
-
-        // Prepare data for gender distribution
-        const genderCounts = userData.reduce((acc, user) => {
+        // Gender distribution
+        const genderCounts = filteredData.reduce((acc, user) => {
             acc[user.gender] = (acc[user.gender] || 0) + 1;
             return acc;
         }, {});
@@ -46,29 +93,51 @@
         const genderLabels = Object.keys(genderCounts);
         const genderValues = Object.values(genderCounts);
 
-        // Bar Chart for App Usage Time by OS
-        const appUsageCtx = document.getElementById('appUsageChart').getContext('2d');
-        new Chart(appUsageCtx, {
+        // Age distribution (Histogram)
+        const ageLabels = filteredData.map(user => user.age);
+        const ageDistribution = Array.from({ length: 10 }, (_, i) => {
+            return filteredData.filter(user => user.age >= i * 10 && user.age < (i + 1) * 10).length;
+        });
+
+        // Operating System Distribution (Bar Chart)
+        const osData = filteredData.reduce((acc, user) => {
+            acc[user.operating_system] = (acc[user.operating_system] || 0) + 1;
+            return acc;
+        }, {});
+
+        const osLabels = Object.keys(osData);
+        const osValues = Object.values(osData);
+
+        // App Usage (Bar Chart)
+        const appUsageLabels = filteredData.map(user => user.device_model);
+        const appUsageValues = filteredData.map(user => user.app_usage_time);
+
+        // Battery Drain vs App Usage (Scatter Plot)
+        const batteryDrainValues = filteredData.map(user => user.battery_drain);
+        const appUsageValuesForScatter = filteredData.map(user => user.app_usage_time);
+
+        // Chart.js: Age Distribution
+        const ageCtx = document.getElementById('ageDistributionChart').getContext('2d');
+        new Chart(ageCtx, {
             type: 'bar',
             data: {
-                labels: osLabels,
+                labels: ['0-9', '10-19', '20-29', '30-39', '40-49', '50-59', '60-69', '70-79', '80-89', '90+'],
                 datasets: [{
-                    label: 'Average App Usage Time (minutes)',
-                    data: osAppUsage,
-                    backgroundColor: ['#4e79a7', '#f28e2b', '#e15759'],
+                    label: 'Number of Users by Age Group',
+                    data: ageDistribution,
+                    backgroundColor: '#4e79a7'
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { display: true },
-                    title: { display: true, text: 'Average App Usage by OS' }
+                    title: { display: true, text: 'Age Distribution' }
                 }
             }
         });
 
-        // Pie Chart for Gender Distribution
-        const genderCtx = document.getElementById('genderChart').getContext('2d');
+        // Gender Distribution Pie Chart
+        const genderCtx = document.getElementById('genderDistributionChart').getContext('2d');
         new Chart(genderCtx, {
             type: 'pie',
             data: {
@@ -81,8 +150,70 @@
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { display: true },
                     title: { display: true, text: 'Gender Distribution' }
+                }
+            }
+        });
+
+        // OS Distribution Bar Chart
+        const osCtx = document.getElementById('osDistributionChart').getContext('2d');
+        new Chart(osCtx, {
+            type: 'bar',
+            data: {
+                labels: osLabels,
+                datasets: [{
+                    label: 'Users by OS',
+                    data: osValues,
+                    backgroundColor: ['#76c7c0', '#f28e2b'],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Operating System Distribution' }
+                }
+            }
+        });
+
+        // App Usage Bar Chart
+        const appUsageCtx = document.getElementById('appUsageChart').getContext('2d');
+        new Chart(appUsageCtx, {
+            type: 'bar',
+            data: {
+                labels: appUsageLabels,
+                datasets: [{
+                    label: 'App Usage Time (minutes)',
+                    data: appUsageValues,
+                    backgroundColor: '#4e79a7'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'App Usage Time by Device' }
+                }
+            }
+        });
+
+        // Battery Drain vs App Usage Scatter Plot
+        const batteryAppUsageCtx = document.getElementById('batteryAppUsageChart').getContext('2d');
+        new Chart(batteryAppUsageCtx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Battery Drain vs App Usage',
+                    data: batteryDrainValues.map((value, index) => ({ x: value, y: appUsageValuesForScatter[index] })),
+                    backgroundColor: '#f28e2b',
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Battery Drain vs App Usage' }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Battery Drain (mAh)' } },
+                    y: { title: { display: true, text: 'App Usage (minutes)' } },
                 }
             }
         });
