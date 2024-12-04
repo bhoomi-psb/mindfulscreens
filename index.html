@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mindful Screens</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Mindful Screens</h1>
+        <a href="/add" class="btn btn-primary">Add New User</a>
+        <a href="/charts" class="btn btn-secondary">View Charts</a>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Device Model</th>
+                    <th>OS</th>
+                    <th>App Usage</th>
+                    <th>Screen On Time</th>
+                    <th>Battery Drain</th>
+                    <th>Data Usage</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.device_model }}</td>
+                    <td>{{ user.operating_system }}</td>
+                    <td>{{ user.app_usage_time }}</td>
+                    <td>{{ user.screen_on_time }}</td>
+                    <td>{{ user.battery_drain }}</td>
+                    <td>{{ user.data_usage }}</td>
+                    <td>
+                        <a href="/update/{{ user.id }}">Edit</a>
+                        <a href="/delete/{{ user.id }}">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
