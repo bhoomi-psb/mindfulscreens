@@ -1,0 +1,106 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <h2>Dashboard</h2>
+    <h4>Your Goals</h4>
+    <ul>
+        {% for goal in goals %}
+            <li>Goal: {{ goal.goal_time }} hours</li>
+        {% endfor %}
+    </ul>
+
+    <h5>User Insights</h5>
+    <ul>
+        <li><strong>Average App Usage Time:</strong> {{ avg_app_usage }} hours</li>
+        <li><strong>Average Battery Drain:</strong> {{ avg_battery_drain }} %</li>
+        <li><strong>Average Data Usage:</strong> {{ avg_data_usage }} MB</li>
+    </ul>
+
+    <h5>User Behavior Analysis</h5>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>User Behavior Class</th>
+                <th>Average App Usage</th>
+                <th>Average Battery Drain</th>
+                <th>Average Data Usage</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in behavior_analysis %}
+                <tr>
+                    <td>{{ row['user_behaviour_class'] }}</td>
+                    <td>{{ row['app_usage_time'] }}</td>
+                    <td>{{ row['battery_drain'] }}</td>
+                    <td>{{ row['data_usage'] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="row">
+        <div class="col-md-6">
+            <canvas id="appUsageChart"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="batteryDrainChart"></canvas>
+        </div>
+    </div>
+
+    <h5>Set Your Goal</h5>
+    <form method="POST" action="/dashboard">
+        <input type="number" name="goal_time" class="form-control" placeholder="Enter goal in hours" required>
+        <button type="submit" class="btn btn-success mt-2">Set Goal</button>
+    </form>
+
+    <h5 class="mt-4">Tasks</h5>
+    <form method="POST" action="/dashboard">
+        <input type="text" name="task" class="form-control" placeholder="Enter task" required>
+        <button type="submit" class="btn btn-primary mt-2">Add Task</button>
+    </form>
+
+    <ul>
+        {% for task in tasks %}
+            <li>
+                {{ task.task }}
+                <form method="POST" action="/toggle_task/{{ task.id }}" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-secondary">Toggle</button>
+                </form>
+                <form method="POST" action="/delete_task/{{ task.id }}" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <script>
+        // Initialize Charts.js
+        var appUsageChart = new Chart(document.getElementById('appUsageChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Class 1', 'Class 2', 'Class 3'],  // Example labels
+                datasets: [{
+                    label: 'App Usage Time (hours)',
+                    data: [12, 15, 9],  // Example data
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            }
+        });
+
+        var batteryDrainChart = new Chart(document.getElementById('batteryDrainChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Class 1', 'Class 2', 'Class 3'],
+                datasets: [{
+                    label: 'Battery Drain (%)',
+                    data: [50, 60, 40],
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            }
+        });
+    </script>
+{% endblock %}
