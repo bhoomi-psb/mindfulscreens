@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update User - Mindful Screens</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Update User</h1>
+        <nav>
+            <a href="/">Home</a>
+        </nav>
+    </header>
+    <main>
+        <form action="/update/{{ user.id }}" method="POST">
+            <label>Device Model:</label>
+            <input type="text" name="device_model" value="{{ user.device_model }}" required>
+
+            <label>Operating System:</label>
+            <input type="text" name="operating_system" value="{{ user.operating_system }}" required>
+
+            <label>App Usage Time (in minutes):</label>
+            <input type="number" name="app_usage_time" value="{{ user.app_usage_time }}" min="0" required>
+
+            <label>Screen On Time (in hours):</label>
+            <input type="number" name="screen_on_time" value="{{ user.screen_on_time }}" min="0" step="0.01" required>
+
+            <label>Battery Drain (in mAh):</label>
+            <input type="number" name="battery_drain" value="{{ user.battery_drain }}" min="0" required>
+
+            <label>Number of Apps Installed:</label>
+            <input type="number" name="num_apps_installed" value="{{ user.num_apps_installed }}" min="0" required>
+
+            <label>Data Usage (in MB):</label>
+            <input type="number" name="data_usage" value="{{ user.data_usage }}" min="0" required>
+
+            <label>Age:</label>
+            <input type="number" name="age" value="{{ user.age }}" min="1" required>
+
+            <label>Gender:</label>
+            <select name="gender" required>
+                <option value="Male"> {% if user.gender == "Male" %}selected{% endif %}Male</option>
+                <option value="Female"> {% if user.gender == "Female" %}selected{% endif %}Female</option>
+            </select>
+
+            <label>User Behavior Class (1-5):</label>
+            <input type="number" name="behavior_class" value="{{ user.behavior_class }}" min="1" max="5" required>
+
+            <button type="submit">Update User</button>
+        </form>
+    </main>
+</body>
+</html>

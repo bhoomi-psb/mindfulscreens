@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usage Charts</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Usage Charts</h1>
+        <a href="/" class="btn btn-primary">Back to Home</a>
+
+        <div>
+            <canvas id="appUsageChart" width="400" height="200"></canvas>
+        </div>
+        <div>
+            <canvas id="genderChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Data from Flask passed via Jinja
+        const userData = {{ users|tojson }};
+
+        // Group data by OS and calculate average app usage
+        const osData = {};
+        userData.forEach(user => {
+            if (!osData[user.operating_system]) {
+                osData[user.operating_system] = { total: 0, count: 0 };
+            }
+            osData[user.operating_system].total += user.app_usage_time;
+            osData[user.operating_system].count += 1;
+        });
+
+        const osLabels = Object.keys(osData);
+        const osAppUsage = osLabels.map(os => osData[os].total / osData[os].count);
+
+        // Prepare data for gender distribution
+        const genderCounts = userData.reduce((acc, user) => {
+            acc[user.gender] = (acc[user.gender] || 0) + 1;
+            return acc;
+        }, {});
+
+        const genderLabels = Object.keys(genderCounts);
+        const genderValues = Object.values(genderCounts);
+
+        // Bar Chart for App Usage Time by OS
+        const appUsageCtx = document.getElementById('appUsageChart').getContext('2d');
+        new Chart(appUsageCtx, {
+            type: 'bar',
+            data: {
+                labels: osLabels,
+                datasets: [{
+                    label: 'Average App Usage Time (minutes)',
+                    data: osAppUsage,
+                    backgroundColor: ['#4e79a7', '#f28e2b', '#e15759'],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true },
+                    title: { display: true, text: 'Average App Usage by OS' }
+                }
+            }
+        });
+
+        // Pie Chart for Gender Distribution
+        const genderCtx = document.getElementById('genderChart').getContext('2d');
+        new Chart(genderCtx, {
+            type: 'pie',
+            data: {
+                labels: genderLabels,
+                datasets: [{
+                    data: genderValues,
+                    backgroundColor: ['#76c7c0', '#f28e2b'],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true },
+                    title: { display: true, text: 'Gender Distribution' }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
