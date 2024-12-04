@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add User - Mindful Screens</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Add New User</h1>
+        <form action="/add_user" method="POST">
+            <!-- User Information -->
+            <div class="form-container">
+                <div class="row">
+                    <div>
+                        <label for="device_model">Device Model</label>
+                        <input type="text" name="device_model" id="device_model" required>
+                    </div>
+                    <div>
+                        <label for="operating_system">Operating System</label>
+                        <select name="operating_system" id="operating_system" required>
+                            <option value="iOS">iOS</option>
+                            <option value="Android">Android</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div>
+                        <label for="app_usage_time">App Usage Time (minutes)</label>
+                        <input type="number" name="app_usage_time" id="app_usage_time" required>
+                    </div>
+                    <div>
+                        <label for="screen_on_time">Screen On Time (hours)</label>
+                        <input type="number" name="screen_on_time" id="screen_on_time" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div>
+                        <label for="battery_drain">Battery Drain (mAh)</label>
+                        <input type="number" name="battery_drain" id="battery_drain" required>
+                    </div>
+                    <div>
+                        <label for="num_apps_installed">Number of Apps Installed</label>
+                        <input type="number" name="num_apps_installed" id="num_apps_installed" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div>
+                        <label for="data_usage">Data Usage (MB)</label>
+                        <input type="number" name="data_usage" id="data_usage" required>
+                    </div>
+                    <div>
+                        <label for="age">Age</label>
+                        <input type="number" name="age" id="age" required>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div>
+                        <label for="gender">Gender</label>
+                        <select name="gender" id="gender" required>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="behavior_class">Behavior Class</label>
+                        <select name="behavior_class" id="behavior_class" required>
+                            <option value="1">Class 1</option>
+                            <option value="2">Class 2</option>
+                            <option value="3">Class 3</option>
+                            <option value="4">Class 4</option>
+                            <option value="5">Class 5</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit">Add User</button>
+        </form>
+    </div>
+</body>
+</html>
