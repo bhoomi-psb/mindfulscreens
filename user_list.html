@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User List</title>
+</head>
+<body>
+    <h1>User List</h1>
+    <a href="/add_user">Add New User</a>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Device Model</th>
+                <th>Operating System</th>
+                <th>App Usage Time</th>
+                <th>Screen On Time</th>
+                <th>Battery Drain</th>
+                <th>Num Apps Installed</th>
+                <th>Data Usage</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Behavior Class</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.device_model }}</td>
+                <td>{{ user.operating_system }}</td>
+                <td>{{ user.app_usage_time }}</td>
+                <td>{{ user.screen_on_time }}</td>
+                <td>{{ user.battery_drain }}</td>
+                <td>{{ user.num_apps_installed }}</td>
+                <td>{{ user.data_usage }}</td>
+                <td>{{ user.age }}</td>
+                <td>{{ user.gender }}</td>
+                <td>{{ user.behavior_class }}</td>
+                <td>
+                    <a href="/update_user/{{ user.id }}">Edit</a> |
+                    <a href="/delete_user/{{ user.id }}">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
