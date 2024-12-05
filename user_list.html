@@ -4,48 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User List</title>
+    <!-- Link to Bootstrap CSS for styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h1>User List</h1>
-    <a href="/add_user">Add New User</a>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Device Model</th>
-                <th>Operating System</th>
-                <th>App Usage Time</th>
-                <th>Screen On Time</th>
-                <th>Battery Drain</th>
-                <th>Num Apps Installed</th>
-                <th>Data Usage</th>
-                <th>Age</th>
-                <th>Gender</th>
-                <th>Behavior Class</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user in users %}
-            <tr>
-                <td>{{ user.id }}</td>
-                <td>{{ user.device_model }}</td>
-                <td>{{ user.operating_system }}</td>
-                <td>{{ user.app_usage_time }}</td>
-                <td>{{ user.screen_on_time }}</td>
-                <td>{{ user.battery_drain }}</td>
-                <td>{{ user.num_apps_installed }}</td>
-                <td>{{ user.data_usage }}</td>
-                <td>{{ user.age }}</td>
-                <td>{{ user.gender }}</td>
-                <td>{{ user.behavior_class }}</td>
-                <td>
-                    <a href="/update_user/{{ user.id }}">Edit</a> |
-                    <a href="/delete_user/{{ user.id }}">Delete</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="container mt-4">
+        <h1>User List</h1>
+        <a href="/add_user" class="btn btn-primary mb-3">Add New User</a>
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alert alert-{{ messages[0][0] }} alert-dismissible fade show" role="alert">
+                    {{ messages[0][1] }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- User table -->
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Device Model</th>
+                    <th>Operating System</th>
+                    <th>App Usage Time</th>
+                    <th>Screen On Time</th>
+                    <th>Battery Drain</th>
+                    <th>Num Apps Installed</th>
+                    <th>Data Usage</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Behavior Class</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.device_model }}</td>
+                    <td>{{ user.operating_system }}</td>
+                    <td>{{ user.app_usage_time }}</td>
+                    <td>{{ user.screen_on_time }}</td>
+                    <td>{{ user.battery_drain }}</td>
+                    <td>{{ user.num_apps_installed }}</td>
+                    <td>{{ user.data_usage }}</td>
+                    <td>{{ user.age }}</td>
+                    <td>{{ user.gender }}</td>
+                    <td>{{ user.behavior_class }}</td>
+                    <td>
+                        <a href="/update_user/{{ user.id }}" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="/delete_user/{{ user.id }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Bootstrap JS (for alerts) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
