@@ -10,33 +10,60 @@
 <body>
     <div class="container">
         <h1>Mindful Screens - Usage Insights</h1>
+
+        <!-- Back Button -->
         <a href="/" class="btn btn-primary">Back to Home</a>
 
         <!-- Filters -->
-        <form action="/charts" method="GET">
-            <label for="filter_os">Filter by OS:</label>
-            <select name="filter_os" id="filter_os">
-                <option value="">--All--</option>
-                <option value="iOS" >{% if filter_os == 'iOS' %}selected{% endif %}iOS</option>
-                <option value="Android"> {% if filter_os == 'Android' %}selected{% endif %}Android</option>
-            </select>
+        <form action="/charts" method="GET" class="filters-form">
+            <div class="filter-group">
+                <label for="filter_os">Filter by OS:</label>
+                <select name="filter_os" id="filter_os">
+                    <option value="">--All--</option>
+                    <option value="iOS" >{% if filter_os == 'iOS' %}selected{% endif %}iOS</option>
+                    <option value="Android"> {% if filter_os == 'Android' %}selected{% endif %}Android</option>
+                </select>
+            </div>
 
-            <label for="filter_behavior_class">Filter by Behavior Class:</label>
-            <select name="filter_behavior_class" id="filter_behavior_class">
-                <option value="">--All--</option>
-                {% for i in range(1, 6) %}
-                <option value="{{ i }}"> {% if filter_behavior_class == i %}selected{% endif %}Class {{ i }}</option>
-                {% endfor %}
-            </select>
+            <div class="filter-group">
+                <label for="filter_behavior_class">Filter by Behavior Class:</label>
+                <select name="filter_behavior_class" id="filter_behavior_class">
+                    <option value="">--All--</option>
+                    {% for i in range(1, 6) %}
+                    <option value="{{ i }}" >{% if filter_behavior_class == i %}selected{% endif %}>Class {{ i }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
             <button type="submit">Apply Filter</button>
         </form>
 
         <!-- Charts -->
-        <div>
-            <canvas id="ageDistributionChart" width="400" height="200"></canvas>
+        <div class="charts-row">
+            <div class="chart-container">
+                <canvas id="ageDistributionChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="genderDistributionChart"></canvas>
+            </div>
         </div>
-        <div>
-            <canvas id="genderDistributionChart" width="400" height="200"></canvas>
+
+        <div class="charts-row">
+            <div class="chart-container">
+                <canvas id="osDistributionChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="appUsageChart"></canvas>
+            </div>
+        </div>
+
+        <div class="charts-row">
+            <div class="chart-container">
+                <canvas id="batteryUsageChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="dataUsageChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -58,54 +85,153 @@
             {% endfor %}
         ];
 
-        // Example of generating charts
-        const genderCounts = userData.reduce((acc, user) => {
-            acc[user.gender] = (acc[user.gender] || 0) + 1;
-            return acc;
-        }, {});
-
-        const genderCtx = document.getElementById('genderDistributionChart').getContext('2d');
-        new Chart(genderCtx, {
-            type: 'pie',
-            data: {
-                labels: Object.keys(genderCounts),
-                datasets: [{
-                    data: Object.values(genderCounts),
-                    backgroundColor: ['#76c7c0', '#f28e2b']
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: { display: true, text: 'Gender Distribution' }
-                }
-            }
-        });
-
-        const ageCounts = userData.reduce((acc, user) => {
+        // Chart Data Calculations
+        const ageDistribution = userData.reduce((acc, user) => {
             const group = Math.floor(user.age / 10) * 10;
             acc[group] = (acc[group] || 0) + 1;
             return acc;
         }, {});
 
-        const ageCtx = document.getElementById('ageDistributionChart').getContext('2d');
-        new Chart(ageCtx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(ageCounts).map(group => `${group}-${group + 9}`),
-                datasets: [{
-                    label: 'Number of Users',
-                    data: Object.values(ageCounts),
-                    backgroundColor: '#4e79a7'
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    title: { display: true, text: 'Age Distribution' }
-                }
-            }
-        });
+        const genderDistribution = userData.reduce((acc, user) => {
+            acc[user.gender] = (acc[user.gender] || 0) + 1;
+            return acc;
+        }, {});
+
+        const osDistribution = userData.reduce((acc, user) => {
+            acc[user.operating_system] = (acc[user.operating_system] || 0) + 1;
+            return acc;
+        }, {});
+
+        const appUsage = userData.map(user => user.app_usage_time);
+        const batteryDrain = userData.map(user => user.battery_drain);
+        const dataUsage = userData.map(user => user.data_usage);
+
+        // Chart.js Configurations
+        const createChart = (ctx, type, labels, data, options) => {
+            new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: ['#4e79a7', '#f28e2b', '#76c7c0', '#e15759', '#59a14f', '#edc948']
+                    }]
+                },
+                options: options
+            });
+        };
+
+        // Age Distribution
+        createChart(document.getElementById('ageDistributionChart'), 'bar',
+            Object.keys(ageDistribution).map(group => `${group}-${+group + 9}`),
+            Object.values(ageDistribution),
+            { plugins: { title: { display: true, text: 'Age Distribution' } } });
+
+        // Gender Distribution
+        createChart(document.getElementById('genderDistributionChart'), 'pie',
+            Object.keys(genderDistribution),
+            Object.values(genderDistribution),
+            { plugins: { title: { display: true, text: 'Gender Distribution' } } });
+
+        // OS Distribution
+        createChart(document.getElementById('osDistributionChart'), 'bar',
+            Object.keys(osDistribution),
+            Object.values(osDistribution),
+            { plugins: { title: { display: true, text: 'OS Distribution' } } });
+
+        // App Usage
+        createChart(document.getElementById('appUsageChart'), 'line',
+            userData.map(user => user.device_model),
+            appUsage,
+            { plugins: { title: { display: true, text: 'App Usage Time' } } });
+
+        // Battery Usage
+        createChart(document.getElementById('batteryUsageChart'), 'line',
+            userData.map(user => user.device_model),
+            batteryDrain,
+            { plugins: { title: { display: true, text: 'Battery Usage' } } });
+
+        // Data Usage
+        createChart(document.getElementById('dataUsageChart'), 'line',
+            userData.map(user => user.device_model),
+            dataUsage,
+            { plugins: { title: { display: true, text: 'Data Usage' } } });
     </script>
+
+    <style>
+        /* Container Styles */
+        .container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Back Button Styles */
+        .btn {
+            background-color: #4e79a7;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-color: #2b5e74;
+        }
+
+        /* Filter Form Styles */
+        .filters-form {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 40px; /* Space between filter and charts */
+        }
+
+        .filter-group {
+            margin-right: 20px;
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        select {
+            padding: 5px;
+            width: 150px;
+        }
+
+        button {
+            padding: 5px 10px;
+            background-color: #4e79a7;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2b5e74;
+        }
+
+        /* Chart Layout Styles */
+        .charts-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .chart-container {
+            width: 48%; /* Two charts per row */
+            height: 300px; /* Fixed height for consistency */
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
 </body>
 </html>
