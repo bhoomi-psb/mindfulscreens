@@ -7,7 +7,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'your_secret_key'
 db = SQLAlchemy(app)
 
-# Database model
+# User Model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     device_model = db.Column(db.String(50))
@@ -21,12 +21,13 @@ class User(db.Model):
     gender = db.Column(db.String(10))
     behavior_class = db.Column(db.Integer)
 
+# Routes
 @app.route('/')
 def index():
     users = User.query.all()
     return render_template('index.html', users=users)
 
-@app.route('/add', methods=['GET', 'POST'])
+@app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
     if request.method == 'POST':
         new_user = User(
@@ -47,9 +48,9 @@ def add_user():
         return redirect(url_for('index'))
     return render_template('add_user.html')
 
-@app.route('/update/<int:id>', methods=['GET', 'POST'])
-def update_user(id):
-    user = User.query.get_or_404(id)
+@app.route('/update_user/<int:user_id>', methods=['GET', 'POST'])
+def update_user(user_id):
+    user = User.query.get_or_404(user_id)
     if request.method == 'POST':
         user.device_model = request.form['device_model']
         user.operating_system = request.form['operating_system']
@@ -61,33 +62,26 @@ def update_user(id):
         user.age = int(request.form['age'])
         user.gender = request.form['gender']
         user.behavior_class = int(request.form['behavior_class'])
+
         db.session.commit()
         flash('User updated successfully!', 'success')
         return redirect(url_for('index'))
     return render_template('update_user.html', user=user)
 
-@app.route('/delete/<int:id>')
-def delete_user(id):
-    user = User.query.get_or_404(id)
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
     db.session.delete(user)
     db.session.commit()
     flash('User deleted successfully!', 'success')
     return redirect(url_for('index'))
 
-@app.route('/charts')
+@app.route('/charts', methods=['GET'])
 def charts():
     users = User.query.all()
-    user_data = [
-        {
-            "operating_system": user.operating_system,
-            "app_usage_time": user.app_usage_time,
-            "gender": user.gender
-        }
-        for user in users
-    ]
-    return render_template('charts.html', users=user_data)
+    return render_template('charts.html', users=users)
 
-
+# Initialize Database
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
